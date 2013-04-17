@@ -24,11 +24,21 @@ DESCRIPTION
   Show a repository unique id
 
 OPTIONS
+  -c
+    Clear screen before showing output
+
   -h
     Show this help message
 
+  -f
+    Flip output horizontally
+
   -r
     Align output to the right
+
+  -s <N>
+    Split sha1 sum into N-character strings. default is 10. Set to 0
+    to disable split
 `
 	fmt.Print(usage)
 }
@@ -116,8 +126,15 @@ var debug *bool
 func main() {
 	alignRight := flag.Bool("r", false, "Right align output")
 	debug = flag.Bool("d", false, "Debug")
+	chunkSize := flag.Int("s", 10, "Split sha1 sum into N-character strings")
+	clearScreen := flag.Bool("c", false, "Clear screen before showing output")
+	flip := flag.Bool("f", false, "Flip output horizontally")
 	flag.Usage = usage
 	flag.Parse()
+
+	if *chunkSize == 0 {
+		*chunkSize = 40
+	}
 
 	dirs := make([]string, 0)
 	bytes, err := exec.Command("git", "rev-parse", "--git-dir").Output()
@@ -152,17 +169,51 @@ func main() {
 	}
 
 	basename := mustGetBaseName(wd)
-	if *alignRight {
-		ws := termsize.Get()
-		format := fmt.Sprintf("%%%ds\n", ws.Col)
-		fmt.Printf(format, basename)
-		fmt.Printf(format, sha1str)
-		for _, str := range strings.Split(randomart, "\n") {
-			fmt.Printf(format, str)
-		}
-	} else {
-		fmt.Println(basename)
-		fmt.Printf("%s\n", sha1str)
-		fmt.Println(randomart)
+	chunks := splitSha1String(sha1str, *chunkSize)
+	if *clearScreen {
+		doClearScreen()
 	}
+
+	format := "%s\n"
+	if *alignRight || *flip {
+		ws := termsize.Get()
+		format = fmt.Sprintf("%%%ds\n", ws.Col)
+	}
+
+	fmt.Printf(format, basename)
+	for _, c := range chunks {
+		fmt.Printf(format, mayReverse(*flip, c))
+	}
+	for _, str := range strings.Split(randomart, "\n") {
+		fmt.Printf(format, mayReverse(*flip, str))
+	}
+
+}
+
+func splitSha1String(sha1str string, chunkSize int) []string {
+	sha1chunk := sha1str[:]
+	nChunk := len(sha1str) / chunkSize
+	chunks := make([]string, nChunk)
+	for i := 0; i < nChunk; i++ {
+		chunks[i] = sha1chunk[0:chunkSize]
+		sha1chunk = sha1chunk[chunkSize:]
+	}
+	return chunks
+}
+
+func mayReverse(flip bool, str string) string {
+	if !flip {
+		return str
+	}
+	l := len(str)
+	reversed := make([]byte, l)
+	for i := 0; i < l; i++ {
+		reversed[i] = str[l-i-1]
+	}
+	return string(reversed)
+}
+
+func doClearScreen() {
+	fmt.Print("\033[2J")
+	fmt.Print("\033[H")
 }

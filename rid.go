@@ -81,8 +81,8 @@ func getDirList(dirname string) []string {
 	return ret
 }
 
-func die(err error) {
-	log.Fatal("rid: ", err)
+func die(args ...interface{}) {
+	log.Fatal("rid", args)
 }
 
 func getRepoSig(dirs []string) string {
@@ -97,7 +97,7 @@ func getRepoSig(dirs []string) string {
 		cmdsplit := strings.Split(cmd, " ")
 		out, err := exec.Command("git", cmdsplit...).Output()
 		if err != nil {
-			die(err)
+			die("getReposig", err, "git", cmdsplit)
 		}
 		logs[i] = string(out)
 	}

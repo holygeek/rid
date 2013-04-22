@@ -15,30 +15,30 @@ import (
 
 func usage() {
 	usage := `NAME
-  rid - Show repository id (currently only grok git)
+	rid - Show repository id (currently only grok git)
 
 SYNOPSIS
-  rid [-hr]
+	rid [-hr]
 
 DESCRIPTION
-  Show a repository unique id
+	Show a repository unique id
 
 OPTIONS
-  -c
-    Clear screen before showing output
+	-c
+	  Clear screen before showing output
 
-  -h
-    Show this help message
+	-h
+	  Show this help message
 
-  -f
-    Flip output horizontally
+	-f
+	  Flip output horizontally
 
-  -r
-    Align output to the right
+	-r
+	  Align output to the right
 
-  -s <N>
-    Split sha1 sum into N-character strings. default is 10. Set to 0
-    to disable split
+	-s <N>
+	  Split sha1 sum into N-character strings. default is 10. Set to 0
+	  to disable split
 `
 	fmt.Print(usage)
 }

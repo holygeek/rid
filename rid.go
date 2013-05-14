@@ -154,8 +154,7 @@ func main() {
 		opt.chunkSize = 40
 	}
 
-	wantColor := ! opt.noColor
-	if ! wantColor {
+	if opt.noColor {
 		COLOR_BOLD_YELLOW = ""
 		COLOR_RESET = ""
 	}
@@ -198,31 +197,10 @@ func main() {
 		doClearScreen()
 	}
 
-	oneString := "%s\n"
-	twoStrings := "%s%s\n"
-	if opt.alignRight || opt.flip {
-		ws := termsize.Get()
-		twoStrings = fmt.Sprintf("%%%ds%%s\n",
-					 ws.Col - uint16(opt.chunkSize))
-		oneString = fmt.Sprintf("%%%ds\n", ws.Col);
-	}
+	oneString, twoStrings := getFormatter(&opt)
+	paint, reverse := getPainterAndReverser(&opt)
 
 	fmt.Printf(oneString, basename)
-
-	noop := func (str string) string { return str }
-	paint := noop
-	reverse := noop
-	if wantColor {
-		if opt.flip {
-			paint = highlightLastChar
-		} else {
-			paint = highlightFirstChar
-		}
-	}
-	if opt.flip {
-		reverse = reverseString
-	}
-
 	for _, c := range chunks {
 		c = reverse(c)
 		c = paint(c)
@@ -232,6 +210,33 @@ func main() {
 		str = reverse(str)
 		fmt.Printf(oneString, str)
 	}
+}
+
+func getFormatter(opt *Option) (oneString, twoStrings string) {
+	oneString, twoStrings = "%s\n", "%s%s\n"
+	if opt.alignRight || opt.flip {
+		ws := termsize.Get()
+		twoStrings = fmt.Sprintf("%%%ds%%s\n",
+					 ws.Col - uint16(opt.chunkSize))
+		oneString = fmt.Sprintf("%%%ds\n", ws.Col);
+	}
+	return;
+}
+
+func getPainterAndReverser(opt *Option) (paint, reverse func (string) string) {
+	noop := func (str string) string { return str }
+	paint, reverse = noop, noop
+	if ! opt.noColor {
+		if opt.flip {
+			paint = highlightLastChar
+		} else {
+			paint = highlightFirstChar
+		}
+	}
+	if opt.flip {
+		reverse = reverseString
+	}
+	return
 }
 
 func splitSha1String(sha1str string, chunkSize int) []string {

@@ -51,84 +51,6 @@ var (
 	COLOR_RESET       = "\033[0m"
 )
 
-func mustSuccess(val interface{}, err error) interface{} {
-	if err != nil {
-		die(err)
-	}
-	return val
-}
-
-func getDirList(dirname string) []string {
-	file, err := os.Open(dirname)
-	if err != nil {
-		die(err)
-	}
-
-	var fi os.FileInfo
-	if fi, err = file.Stat(); err != nil {
-		die(err)
-	}
-
-	if fi.IsDir() == false {
-		log.Fatal("rid: not a directory: " + dirname)
-	}
-
-	dirs, err := file.Readdirnames(0)
-	if err != nil {
-		die(err)
-	}
-
-	ret := make([]string, 0)
-	for _, dir := range dirs {
-		fi, _ := os.Stat(dir)
-		if fi.IsDir() {
-			ret = append(ret, dir)
-		}
-	}
-
-	return ret
-}
-
-func die(args ...interface{}) {
-	log.Fatal("rid", args)
-}
-
-func getRepoSig(dirs []string) string {
-	logs := make([]string, len(dirs))
-	for i, dir := range dirs {
-		cmd := fmt.Sprintf("--git-dir=%s/.git --work-tree=%s log --no-decorate -1 --oneline",
-			dir, dir)
-
-		if opt.debug {
-			fmt.Println(cmd)
-		}
-		cmdsplit := strings.Split(cmd, " ")
-		out, err := exec.Command("git", cmdsplit...).Output()
-		if err != nil {
-			die("getReposig", err, "git", cmdsplit)
-		}
-		logs[i] = string(out)
-	}
-	sort.Strings(logs)
-	return strings.Join(logs, "\n")
-}
-
-func mustGetDirName(path string) string {
-	lastSep := strings.LastIndex(path, "/")
-	if lastSep == -1 {
-		log.Fatal("rid: Could not get dirname from path '" + path + "'")
-	}
-	return path[0:lastSep]
-}
-
-func mustGetBaseName(path string) string {
-	tokens := strings.Split(path, "/")
-	if len(tokens) == 0 {
-		log.Fatal("rid: Could not get basename from path '" + path + "'")
-	}
-	return tokens[len(tokens)-1]
-}
-
 type Option struct {
 	alignRight  bool
 	debug       bool
@@ -272,4 +194,82 @@ func reverseString(str string) string {
 func doClearScreen() {
 	fmt.Print("\033[2J")
 	fmt.Print("\033[H")
+}
+
+func mustSuccess(val interface{}, err error) interface{} {
+	if err != nil {
+		die(err)
+	}
+	return val
+}
+
+func getDirList(dirname string) []string {
+	file, err := os.Open(dirname)
+	if err != nil {
+		die(err)
+	}
+
+	var fi os.FileInfo
+	if fi, err = file.Stat(); err != nil {
+		die(err)
+	}
+
+	if fi.IsDir() == false {
+		log.Fatal("rid: not a directory: " + dirname)
+	}
+
+	dirs, err := file.Readdirnames(0)
+	if err != nil {
+		die(err)
+	}
+
+	ret := make([]string, 0)
+	for _, dir := range dirs {
+		fi, _ := os.Stat(dir)
+		if fi.IsDir() {
+			ret = append(ret, dir)
+		}
+	}
+
+	return ret
+}
+
+func die(args ...interface{}) {
+	log.Fatal("rid", args)
+}
+
+func getRepoSig(dirs []string) string {
+	logs := make([]string, len(dirs))
+	for i, dir := range dirs {
+		cmd := fmt.Sprintf("--git-dir=%s/.git --work-tree=%s log --no-decorate -1 --oneline",
+			dir, dir)
+
+		if opt.debug {
+			fmt.Println(cmd)
+		}
+		cmdsplit := strings.Split(cmd, " ")
+		out, err := exec.Command("git", cmdsplit...).Output()
+		if err != nil {
+			die("getReposig", err, "git", cmdsplit)
+		}
+		logs[i] = string(out)
+	}
+	sort.Strings(logs)
+	return strings.Join(logs, "\n")
+}
+
+func mustGetDirName(path string) string {
+	lastSep := strings.LastIndex(path, "/")
+	if lastSep == -1 {
+		log.Fatal("rid: Could not get dirname from path '" + path + "'")
+	}
+	return path[0:lastSep]
+}
+
+func mustGetBaseName(path string) string {
+	tokens := strings.Split(path, "/")
+	if len(tokens) == 0 {
+		log.Fatal("rid: Could not get basename from path '" + path + "'")
+	}
+	return tokens[len(tokens)-1]
 }

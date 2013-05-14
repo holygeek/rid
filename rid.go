@@ -145,7 +145,8 @@ func main() {
 		*chunkSize = 40
 	}
 
-	if *noColor {
+	wantColor := ! *noColor
+	if ! wantColor {
 		COLOR_BOLD_YELLOW = ""
 		COLOR_RESET = ""
 	}
@@ -198,14 +199,30 @@ func main() {
 	}
 
 	fmt.Printf(oneString, basename)
-	highlightFirstChar := true
-	for _, c := range chunks {
-		fmt.Printf(twoStrings, "", mayReverse(*flip, c, highlightFirstChar))
+
+	noop := func (str string) string { return str }
+	paint := noop
+	reverse := noop
+	if wantColor {
+		if *flip {
+			paint = highlightLastChar
+		} else {
+			paint = highlightFirstChar
+		}
 	}
-	for _, str := range strings.Split(randomart, "\n") {
-		fmt.Printf(oneString, mayReverse(*flip, str, !highlightFirstChar))
+	if *flip {
+		reverse = reverseString
 	}
 
+	for _, c := range chunks {
+		c = reverse(c)
+		c = paint(c)
+		fmt.Printf(twoStrings, "", c)
+	}
+	for _, str := range strings.Split(randomart, "\n") {
+		str = reverse(str)
+		fmt.Printf(oneString, str)
+	}
 }
 
 func splitSha1String(sha1str string, chunkSize int) []string {
@@ -228,25 +245,13 @@ func highlightLastChar(str string) string {
 	return str[0:l-1] + COLOR_BOLD_YELLOW + str[l-1:] + COLOR_RESET
 }
 
-func mayReverse(flip bool, str string, highlight bool) string {
-	if !flip {
-		if highlight {
-			return highlightFirstChar(str)
-		} else {
-			return str
-		}
-	}
-
+func reverseString(str string) string {
 	l := len(str)
 	reversed := make([]byte, l)
 	for i := 0; i < l; i++ {
 		reversed[i] = str[l-i-1]
 	}
-	r := string(reversed)
-	if highlight {
-		r = highlightLastChar(r)
-	}
-	return r;
+	return string(reversed)
 }
 
 func doClearScreen() {

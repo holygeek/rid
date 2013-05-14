@@ -99,7 +99,7 @@ func getRepoSig(dirs []string) string {
 		cmd := fmt.Sprintf("--git-dir=%s/.git --work-tree=%s log --no-decorate -1 --oneline",
 			dir, dir)
 
-		if *debug {
+		if opt.debug {
 			fmt.Println(cmd)
 		}
 		cmdsplit := strings.Split(cmd, " ")
@@ -129,23 +129,32 @@ func mustGetBaseName(path string) string {
 	return tokens[len(tokens)-1]
 }
 
-var debug *bool
+type Option struct {
+	alignRight bool
+	debug bool
+	chunkSize int
+	noColor bool
+	clearScreen bool
+	flip bool
+}
+var opt = Option{ chunkSize: 10 }
 
 func main() {
-	alignRight := flag.Bool("r", false, "Right align output")
-	debug = flag.Bool("d", false, "Debug")
-	chunkSize := flag.Int("s", 10, "Split sha1 sum into N-character strings")
-	noColor := flag.Bool("C", false, "Colorize first character in sha1 sum chunks")
-	clearScreen := flag.Bool("c", false, "Clear screen before showing output")
-	flip := flag.Bool("f", false, "Flip output horizontally")
+	flag.BoolVar(&opt.alignRight, "r", false, "Right align output")
+
+	flag.BoolVar(&opt.debug, "d", false, "Debug")
+	flag.IntVar(&opt.chunkSize, "s", opt.chunkSize, "Split sha1 sum into N-character strings")
+	flag.BoolVar(&opt.noColor, "C", false, "Colorize first character in sha1 sum chunks")
+	flag.BoolVar(&opt.clearScreen, "c", false, "Clear screen before showing output")
+	flag.BoolVar(&opt.flip, "f", false, "Flip output horizontally")
 	flag.Usage = usage
 	flag.Parse()
 
-	if *chunkSize == 0 {
-		*chunkSize = 40
+	if opt.chunkSize == 0 {
+		opt.chunkSize = 40
 	}
 
-	wantColor := ! *noColor
+	wantColor := ! opt.noColor
 	if ! wantColor {
 		COLOR_BOLD_YELLOW = ""
 		COLOR_RESET = ""
@@ -169,7 +178,7 @@ func main() {
 		dirs = getDirList(".")
 	}
 
-	if *debug {
+	if opt.debug {
 		fmt.Println("dir: '", dirs, "'")
 	}
 	reposig := getRepoSig(dirs)
@@ -184,17 +193,17 @@ func main() {
 	}
 
 	basename := mustGetBaseName(wd)
-	chunks := splitSha1String(sha1str, *chunkSize)
-	if *clearScreen {
+	chunks := splitSha1String(sha1str, opt.chunkSize)
+	if opt.clearScreen {
 		doClearScreen()
 	}
 
 	oneString := "%s\n"
 	twoStrings := "%s%s\n"
-	if *alignRight || *flip {
+	if opt.alignRight || opt.flip {
 		ws := termsize.Get()
 		twoStrings = fmt.Sprintf("%%%ds%%s\n",
-					 ws.Col - uint16(*chunkSize))
+					 ws.Col - uint16(opt.chunkSize))
 		oneString = fmt.Sprintf("%%%ds\n", ws.Col);
 	}
 
@@ -204,13 +213,13 @@ func main() {
 	paint := noop
 	reverse := noop
 	if wantColor {
-		if *flip {
+		if opt.flip {
 			paint = highlightLastChar
 		} else {
 			paint = highlightFirstChar
 		}
 	}
-	if *flip {
+	if opt.flip {
 		reverse = reverseString
 	}
 

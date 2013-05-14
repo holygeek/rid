@@ -81,9 +81,7 @@ func main() {
 	}
 
 	reposig := getRepoSig()
-	sha1 := sha1.New()
-	sha1.Write([]byte(reposig))
-	sha1str := fmt.Sprintf("%x", sha1.Sum(nil))
+	sha1str := getSha1Str(reposig)
 	randomart := randomart.FromString(reposig)
 
 	wd, err := os.Getwd()
@@ -109,6 +107,12 @@ func main() {
 		str = reverse(str)
 		fmt.Printf(oneString, str)
 	}
+}
+
+func getSha1Str(reposig string) string {
+	sha1 := sha1.New()
+	sha1.Write([]byte(reposig))
+	return fmt.Sprintf("%x", sha1.Sum(nil))
 }
 
 func getFormatter(opt *Option) (oneString, twoStrings string) {

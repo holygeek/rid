@@ -1,0 +1,98 @@
+rid helps me quickly tell if the tip of checked out branches in one or more
+groups of git repositories are identical.
+
+It does this by showing a sha1sum and a randomart that represents one or more
+git repositories:
+
+	$ cd ~/src/git
+	$ rid
+	git
+	3a922e34ec
+	3e88b226a0
+	f2625b982a
+	e60c982787
+	+-----------------+
+	|      o *=.o.    |
+	|     o.=+.B.     |
+	|    o +ooB       |
+	|   . o + .=      |
+	|o . + X Soo.     |
+	|.o . = B o .     |
+	|E.               |
+	|+o               |
+	|.                |
+	+-----------------+
+
+Say on machine A there are 5 git repositores a, b, c, d and e,
+and on machine B there are clones of those 5 repositories A, B, C, D and E.
+
+	me@a$ pwd
+	/home/me/foo
+	me@a$ ls
+	a b c d e
+	me@a$ for i in a b c d e ; do echo $i >> .mgit ; done
+	# .mgit is the way I tell rid that the directories a b c d e
+	# are git repositories that 'belong' together
+
+	me@b$ pwd
+	/home/me/bar
+	me@b$ ls
+	A B C D E
+	me@b$ for i in A B C D E ; do echo $i >> .mgit ; done
+
+	$me@a$ rid
+	foo
+	c7eaebf37d
+	6bb613ed8b
+	714b2b727d
+	3d01e1502c
+	+-----------------+
+	|^^^^^^^^^^^^^^^^^|
+	|^^^^^^^^E^^^^^^^O|
+	|^/^^^^^#^X^^%^&XO|
+	|+O&O@@B+ =@/@@XB=|
+	|+o. . . S @ *.=. |
+	|               +.|
+	|              . o|
+	|                 |
+	|                 |
+	+-----------------+
+
+	$me@b$ rid
+	foo
+	c7eaebf37d
+	6bb613ed8b
+	714b2b727d
+	3d01e1502c
+	+-----------------+
+	|^^^^^^^^^^^^^^^^^|
+	|^^^^^^^^E^^^^^^^O|
+	|^/^^^^^#^X^^%^&XO|
+	|+O&O@@B+ =@/@@XB=|
+	|+o. . . S @ *.=. |
+	|               +.|
+	|              . o|
+	|                 |
+	|                 |
+	+-----------------+
+
+More useful when I run it in a terminal that sits side by side (here the
+terminals are separated by a single pixel):
+
+$me@a$ rid -f              me@b$ rid
+                        foobar
+                 d73fbeae7cc7eaebf37d
+                 b8de316bb66bb613ed8b
+                 d727b2b417714b2b727d
+                 c2051e10d33d01e1502c
+        +-----------------++-----------------+
+        |^^^^^^^^^^^^^^^^^||^^^^^^^^^^^^^^^^^|
+        |O^^^^^^^E^^^^^^^^||^^^^^^^^E^^^^^^^O|
+        |OX&^%^^X^#^^^^^/^||^/^^^^^#^X^^%^&XO|
+        |=BX@@/@= +B@@O&O+||+O&O@@B+ =@/@@XB=|
+        | .=.* @ S . . .o+||+o. . . S @ *.=. |
+        |.+               ||               +.|
+        |o .              ||              . o|
+        |                 ||                 |
+        |                 ||                 |
+        +-----------------++-----------------+

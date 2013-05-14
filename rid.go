@@ -24,6 +24,9 @@ DESCRIPTION
 	Show a repository unique id
 
 OPTIONS
+	-C
+	  Do not colorize first character in sha1 chunk
+
 	-c
 	  Clear screen before showing output
 
@@ -42,6 +45,11 @@ OPTIONS
 `
 	fmt.Print(usage)
 }
+
+var (
+	COLOR_BOLD_YELLOW = "\033[32;1m"
+	COLOR_RESET       = "\033[0m"
+)
 
 func mustSuccess(val interface{}, err error) interface{} {
 	if err != nil {
@@ -127,6 +135,7 @@ func main() {
 	alignRight := flag.Bool("r", false, "Right align output")
 	debug = flag.Bool("d", false, "Debug")
 	chunkSize := flag.Int("s", 10, "Split sha1 sum into N-character strings")
+	noColor := flag.Bool("C", false, "Colorize first character in sha1 sum chunks")
 	clearScreen := flag.Bool("c", false, "Clear screen before showing output")
 	flip := flag.Bool("f", false, "Flip output horizontally")
 	flag.Usage = usage
@@ -134,6 +143,11 @@ func main() {
 
 	if *chunkSize == 0 {
 		*chunkSize = 40
+	}
+
+	if *noColor {
+		COLOR_BOLD_YELLOW = ""
+		COLOR_RESET = ""
 	}
 
 	dirs := make([]string, 0)
@@ -174,19 +188,22 @@ func main() {
 		doClearScreen()
 	}
 
-	format := "%s\n"
+	oneString := "%s\n"
+	twoStrings := "%s%s\n"
 	if *alignRight || *flip {
 		ws := termsize.Get()
-		format = fmt.Sprintf("%%%ds\n", ws.Col)
+		twoStrings = fmt.Sprintf("%%%ds%%s\n",
+					 ws.Col - uint16(*chunkSize))
+		oneString = fmt.Sprintf("%%%ds\n", ws.Col);
 	}
 
-	fmt.Printf(format, basename)
+	fmt.Printf(oneString, basename)
 	highlightFirstChar := true
 	for _, c := range chunks {
-		fmt.Printf(format, mayReverse(*flip, c, highlightFirstChar))
+		fmt.Printf(twoStrings, "", mayReverse(*flip, c, highlightFirstChar))
 	}
 	for _, str := range strings.Split(randomart, "\n") {
-		fmt.Printf(format, mayReverse(*flip, str, !highlightFirstChar))
+		fmt.Printf(oneString, mayReverse(*flip, str, !highlightFirstChar))
 	}
 
 }
@@ -201,11 +218,6 @@ func splitSha1String(sha1str string, chunkSize int) []string {
 	}
 	return chunks
 }
-
-const (
-	COLOR_BOLD_YELLOW = "\033[33;1m"
-	COLOR_RESET       = "\033[0m"
-)
 
 func mayReverse(flip bool, str string, highlight bool) string {
 	if !flip {
@@ -224,7 +236,14 @@ func mayReverse(flip bool, str string, highlight bool) string {
 	for i := 0; i < l; i++ {
 		reversed[i] = str[l-i-1]
 	}
-	return string(reversed)
+	r := string(reversed)
+	if highlight {
+		r = r[0:l-1] +
+			COLOR_BOLD_YELLOW +
+			r[l-1:] +
+			COLOR_RESET
+	}
+	return r;
 }
 
 func doClearScreen() {

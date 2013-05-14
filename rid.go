@@ -138,6 +138,7 @@ type Option struct {
 	flip bool
 }
 var opt = Option{ chunkSize: 10 }
+const HEX_PER_CHAR = 2
 
 func main() {
 	flag.BoolVar(&opt.alignRight, "r", false, "Right align output")
@@ -150,7 +151,7 @@ func main() {
 	flag.Parse()
 
 	if opt.chunkSize == 0 {
-		opt.chunkSize = 40
+		opt.chunkSize = sha1.Size * HEX_PER_CHAR
 	}
 
 	if opt.noColor {

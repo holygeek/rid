@@ -192,7 +192,6 @@ func main() {
 	}
 
 	basename := mustGetBaseName(wd)
-	chunks := splitSha1String(sha1str, opt.chunkSize)
 	if opt.clearScreen {
 		doClearScreen()
 	}
@@ -201,7 +200,7 @@ func main() {
 	paint, reverse := getPainterAndReverser(&opt)
 
 	fmt.Printf(oneString, basename)
-	for _, c := range chunks {
+	for _, c := range splitSha1String(sha1str, opt.chunkSize) {
 		c = reverse(c)
 		c = paint(c)
 		fmt.Printf(twoStrings, "", c)

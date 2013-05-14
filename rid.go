@@ -64,7 +64,7 @@ type Option struct {
 var opt = Option{chunkSize: 10}
 
 const (
-	HEX_PER_CHAR = 2
+	HEX_PER_CHAR  = 2
 	MGIT_FILENAME = ".mgit"
 )
 
@@ -195,7 +195,7 @@ func mustGetMgitDirList() []string {
 			dirs = append(dirs, line)
 		}
 	}
-	return  dirs;
+	return dirs
 
 }
 
@@ -228,9 +228,9 @@ func getRepoSig() string {
 	dirs := getRepoDirectories()
 	logs := make([]string, len(dirs))
 	for i, dir := range dirs {
-		cmd := fmt.Sprintf("--git-dir=%s/.git --work-tree=%s log" +
-				   " --no-decorate -1 --oneline",
-				dir, dir)
+		cmd := fmt.Sprintf("--git-dir=%s/.git --work-tree=%s log"+
+			" --no-decorate -1 --oneline",
+			dir, dir)
 
 		if opt.debug {
 			fmt.Println(cmd)

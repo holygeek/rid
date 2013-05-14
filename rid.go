@@ -228,8 +228,9 @@ func getRepoSig() string {
 	dirs := getRepoDirectories()
 	logs := make([]string, len(dirs))
 	for i, dir := range dirs {
-		cmd := fmt.Sprintf("--git-dir=%s/.git --work-tree=%s log --no-decorate -1 --oneline",
-			dir, dir)
+		cmd := fmt.Sprintf("--git-dir=%s/.git --work-tree=%s log" +
+				   " --no-decorate -1 --oneline",
+				dir, dir)
 
 		if opt.debug {
 			fmt.Println(cmd)

@@ -76,28 +76,7 @@ func main() {
 		COLOR_RESET = ""
 	}
 
-	dirs := make([]string, 0)
-	bytes, err := exec.Command("git", "rev-parse", "--git-dir").Output()
-	isGitRepo := err == nil
-	if isGitRepo {
-		gitDir := string(bytes)
-		newLineIdx := strings.Index(gitDir, "\n")
-		if newLineIdx != -1 {
-			gitDir = strings.Split(gitDir, "\n")[0]
-		}
-		if gitDir == ".git" {
-			dirs = append(dirs, ".")
-		} else {
-			dirs = append(dirs, mustGetDirName(gitDir))
-		}
-	} else {
-		dirs = getDirList(".")
-	}
-
-	if opt.debug {
-		fmt.Println("dir: '", dirs, "'")
-	}
-	reposig := getRepoSig(dirs)
+	reposig := getRepoSig()
 	sha1 := sha1.New()
 	sha1.Write([]byte(reposig))
 	sha1str := fmt.Sprintf("%x", sha1.Sum(nil))
@@ -231,7 +210,33 @@ func die(args ...interface{}) {
 	log.Fatal("rid", args)
 }
 
-func getRepoSig(dirs []string) string {
+func getRepoDirectories() []string {
+	dirs := make([]string, 0)
+	bytes, err := exec.Command("git", "rev-parse", "--git-dir").Output()
+	isGitRepo := err == nil
+	if isGitRepo {
+		gitDir := string(bytes)
+		newLineIdx := strings.Index(gitDir, "\n")
+		if newLineIdx != -1 {
+			gitDir = strings.Split(gitDir, "\n")[0]
+		}
+		if gitDir == ".git" {
+			dirs = append(dirs, ".")
+		} else {
+			dirs = append(dirs, mustGetDirName(gitDir))
+		}
+	} else {
+		dirs = getDirList(".")
+	}
+
+	if opt.debug {
+		fmt.Println("dir: '", dirs, "'")
+	}
+	return dirs
+}
+
+func getRepoSig() string {
+	dirs := getRepoDirectories()
 	logs := make([]string, len(dirs))
 	for i, dir := range dirs {
 		cmd := fmt.Sprintf("--git-dir=%s/.git --work-tree=%s log --no-decorate -1 --oneline",

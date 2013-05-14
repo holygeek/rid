@@ -141,7 +141,6 @@ var opt = Option{ chunkSize: 10 }
 
 func main() {
 	flag.BoolVar(&opt.alignRight, "r", false, "Right align output")
-
 	flag.BoolVar(&opt.debug, "d", false, "Debug")
 	flag.IntVar(&opt.chunkSize, "s", opt.chunkSize, "Split sha1 sum into N-character strings")
 	flag.BoolVar(&opt.noColor, "C", false, "Colorize first character in sha1 sum chunks")

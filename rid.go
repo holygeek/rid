@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/holygeek/randomart"
 	"github.com/holygeek/termsize"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -62,7 +63,10 @@ type Option struct {
 
 var opt = Option{chunkSize: 10}
 
-const HEX_PER_CHAR = 2
+const (
+	HEX_PER_CHAR = 2
+	MGIT_FILENAME = ".mgit"
+)
 
 func main() {
 	setupFlags()
@@ -175,39 +179,24 @@ func mustSuccess(val interface{}, err error) interface{} {
 	return val
 }
 
-func getDirList(dirname string) []string {
-	file, err := os.Open(dirname)
-	if err != nil {
-		die(err)
-	}
-
-	var fi os.FileInfo
-	if fi, err = file.Stat(); err != nil {
-		die(err)
-	}
-
-	if fi.IsDir() == false {
-		log.Fatal("rid: not a directory: " + dirname)
-	}
-
-	dirs, err := file.Readdirnames(0)
-	if err != nil {
-		die(err)
-	}
-
-	ret := make([]string, 0)
-	for _, dir := range dirs {
-		fi, _ := os.Stat(dir)
-		if fi.IsDir() {
-			ret = append(ret, dir)
-		}
-	}
-
-	return ret
-}
-
 func die(args ...interface{}) {
 	log.Fatal("rid", args)
+}
+
+func mustGetMgitDirList() []string {
+	bytes, err := ioutil.ReadFile(MGIT_FILENAME)
+	if err != nil {
+		die("mustGetMgitDirList", err)
+	}
+
+	dirs := make([]string, 0)
+	for _, line := range strings.Split(string(bytes), "\n") {
+		if len(line) > 0 {
+			dirs = append(dirs, line)
+		}
+	}
+	return  dirs;
+
 }
 
 func getRepoDirectories() []string {
@@ -226,7 +215,7 @@ func getRepoDirectories() []string {
 			dirs = append(dirs, mustGetDirName(gitDir))
 		}
 	} else {
-		dirs = getDirList(".")
+		dirs = mustGetMgitDirList()
 	}
 
 	if opt.debug {

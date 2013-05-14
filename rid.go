@@ -219,13 +219,19 @@ func splitSha1String(sha1str string, chunkSize int) []string {
 	return chunks
 }
 
+func highlightFirstChar(str string) string {
+	return COLOR_BOLD_YELLOW + str[0:1] + COLOR_RESET + str[1:]
+}
+
+func highlightLastChar(str string) string {
+	l := len(str)
+	return str[0:l-1] + COLOR_BOLD_YELLOW + str[l-1:] + COLOR_RESET
+}
+
 func mayReverse(flip bool, str string, highlight bool) string {
 	if !flip {
 		if highlight {
-			return COLOR_BOLD_YELLOW +
-				str[0:1] +
-				COLOR_RESET +
-				str[1:]
+			return highlightFirstChar(str)
 		} else {
 			return str
 		}
@@ -238,10 +244,7 @@ func mayReverse(flip bool, str string, highlight bool) string {
 	}
 	r := string(reversed)
 	if highlight {
-		r = r[0:l-1] +
-			COLOR_BOLD_YELLOW +
-			r[l-1:] +
-			COLOR_RESET
+		r = highlightLastChar(r)
 	}
 	return r;
 }

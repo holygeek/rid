@@ -65,14 +65,7 @@ var opt = Option{chunkSize: 10}
 const HEX_PER_CHAR = 2
 
 func main() {
-	flag.BoolVar(&opt.alignRight, "r", false, "Right align output")
-	flag.BoolVar(&opt.debug, "d", false, "Debug")
-	flag.IntVar(&opt.chunkSize, "s", opt.chunkSize, "Split sha1 sum into N-character strings")
-	flag.BoolVar(&opt.noColor, "C", false, "Colorize first character in sha1 sum chunks")
-	flag.BoolVar(&opt.clearScreen, "c", false, "Clear screen before showing output")
-	flag.BoolVar(&opt.flip, "f", false, "Flip output horizontally")
-	flag.Usage = usage
-	flag.Parse()
+	setupFlags()
 
 	if opt.chunkSize == 0 {
 		opt.chunkSize = sha1.Size * HEX_PER_CHAR
@@ -272,4 +265,15 @@ func mustGetBaseName(path string) string {
 		log.Fatal("rid: Could not get basename from path '" + path + "'")
 	}
 	return tokens[len(tokens)-1]
+}
+
+func setupFlags() {
+	flag.BoolVar(&opt.alignRight, "r", false, "Right align output")
+	flag.BoolVar(&opt.debug, "d", false, "Debug")
+	flag.IntVar(&opt.chunkSize, "s", opt.chunkSize, "Split sha1 sum into N-character strings")
+	flag.BoolVar(&opt.noColor, "C", false, "Colorize first character in sha1 sum chunks")
+	flag.BoolVar(&opt.clearScreen, "c", false, "Clear screen before showing output")
+	flag.BoolVar(&opt.flip, "f", false, "Flip output horizontally")
+	flag.Usage = usage
+	flag.Parse()
 }

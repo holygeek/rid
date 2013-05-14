@@ -130,14 +130,16 @@ func mustGetBaseName(path string) string {
 }
 
 type Option struct {
-	alignRight bool
-	debug bool
-	chunkSize int
-	noColor bool
+	alignRight  bool
+	debug       bool
+	chunkSize   int
+	noColor     bool
 	clearScreen bool
-	flip bool
+	flip        bool
 }
-var opt = Option{ chunkSize: 10 }
+
+var opt = Option{chunkSize: 10}
+
 const HEX_PER_CHAR = 2
 
 func main() {
@@ -216,16 +218,16 @@ func getFormatter(opt *Option) (oneString, twoStrings string) {
 	if opt.alignRight || opt.flip {
 		ws := termsize.Get()
 		twoStrings = fmt.Sprintf("%%%ds%%s\n",
-					 ws.Col - uint16(opt.chunkSize))
-		oneString = fmt.Sprintf("%%%ds\n", ws.Col);
+			ws.Col-uint16(opt.chunkSize))
+		oneString = fmt.Sprintf("%%%ds\n", ws.Col)
 	}
-	return;
+	return
 }
 
-func getPainterAndReverser(opt *Option) (paint, reverse func (string) string) {
-	noop := func (str string) string { return str }
+func getPainterAndReverser(opt *Option) (paint, reverse func(string) string) {
+	noop := func(str string) string { return str }
 	paint, reverse = noop, noop
-	if ! opt.noColor {
+	if !opt.noColor {
 		if opt.flip {
 			paint = highlightLastChar
 		} else {

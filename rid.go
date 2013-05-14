@@ -181,11 +181,12 @@ func main() {
 	}
 
 	fmt.Printf(format, basename)
+	highlightFirstChar := true
 	for _, c := range chunks {
-		fmt.Printf(format, mayReverse(*flip, c))
+		fmt.Printf(format, mayReverse(*flip, c, highlightFirstChar))
 	}
 	for _, str := range strings.Split(randomart, "\n") {
-		fmt.Printf(format, mayReverse(*flip, str))
+		fmt.Printf(format, mayReverse(*flip, str, !highlightFirstChar))
 	}
 
 }
@@ -201,10 +202,23 @@ func splitSha1String(sha1str string, chunkSize int) []string {
 	return chunks
 }
 
-func mayReverse(flip bool, str string) string {
+const (
+	COLOR_BOLD_YELLOW = "\033[33;1m"
+	COLOR_RESET       = "\033[0m"
+)
+
+func mayReverse(flip bool, str string, highlight bool) string {
 	if !flip {
-		return str
+		if highlight {
+			return COLOR_BOLD_YELLOW +
+				str[0:1] +
+				COLOR_RESET +
+				str[1:]
+		} else {
+			return str
+		}
 	}
+
 	l := len(str)
 	reversed := make([]byte, l)
 	for i := 0; i < l; i++ {
